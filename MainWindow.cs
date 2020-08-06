@@ -32,7 +32,6 @@ namespace FileTransfer
             FilesSearcher.FileHasBeenFound += new FilesSearcher.FoundFilesHandler(AddFoundFileToListBox); //Добавляет найденные файлы в lbResults по мере их обнаружения
             BackgroundFinder.FilesHaveBeenFound += new BackgroundFinder.BackgroundFinderEventHandler(FindingFinishedSizeCaption);
             BackgroundFinder.FilesHaveBeenFound += new BackgroundFinder.BackgroundFinderEventHandler(FindingFinishedCaption);
-            //BackgroundFinder.FilesHaveBeenFound += new BackgroundFinder.BackgroundFinderEventHandler(FindingFinishedFillListBox); //Добавляет найденные файлы в lbResult после завершения поиска
             BackgroundFinder.FileHasBeenCopied += new BackgroundFinder.BackgroundFinderFilesHandler(ShowNextCopiedFile);
             BackgroundFinder.FileHasBeenCopied += new BackgroundFinder.BackgroundFinderFilesHandler(CopiedFilesSize);
             BackgroundFinder.FilesHaveBeenCopied += new BackgroundFinder.BackgroundFinderEventHandler(CopingFinishedCaption);
@@ -58,7 +57,6 @@ namespace FileTransfer
             private Thread bgCopy;
             private Thread bgDelete;
             public UtilSubSys.FilesSearcher.SearchResults result;
-            //private bool searchHasBeenFinished;
             public bool isWorking
             {
                 get
@@ -169,37 +167,6 @@ namespace FileTransfer
                 _isWorking = true;
                 foreach (FilesSearcher.FoundObjectInfo curObjectInfo in this.result.foundObjectsList)
                 {
-                    /*
-                    //отсекаем первую часть пути, которая совпадает с полным именем указанной для поиска папки.
-                    //какая-то херня. Если путь поиска короткий (C:\), отсекается еще и первая буква имени папки/файла
-                    //поэтому дополнительно проверяем это условие
-                    string cutedCurFileName;
-                    if (directoryToFindFrom[directoryToFindFrom.Length - 2] == ':')
-                    {
-                        cutedCurFileName = curFile.Substring(directoryToFindFrom.Length);
-                        //MessageBox.Show("Длинна имени директории для поиска: " + tbRootFolder.Text.Length.ToString() + 
-                        //"\n" + tbRootFolder.Text.Length.ToString() + " символ от начала строки с именем найденного файла: " + curFile[tbRootFolder.Text.Length] +
-                        //"\n" + "имя файла, начиная с " + tbRootFolder.Text.Length.ToString() + " символа: " + curFile.Substring(tbRootFolder.Text.Length));
-                    }
-                    else
-                    {
-                        cutedCurFileName = curFile.Substring(directoryToFindFrom.Length + 1);
-                        //MessageBox.Show("Длинна имени директории для поиска: " + tbRootFolder.Text.Length.ToString() +
-                        //"\n" + tbRootFolder.Text.Length.ToString() + " символ от начала строки с именем найденного файла: " + curFile[tbRootFolder.Text.Length] +
-                        //"\n" + "имя файла, начиная с " + tbRootFolder.Text.Length.ToString() + " символа: " + curFile.Substring(tbRootFolder.Text.Length));
-                    }
-
-                    //добавляем к полученному имени файла новое начало, которое совпадает с целевой директорией
-                    string newFileName;
-                    if (targetDirectory[targetDirectory.Length - 1] == '\\')
-                    {
-                        newFileName = targetDirectory + cutedCurFileName;
-                    }
-                    else
-                    {
-                        newFileName = targetDirectory + "\\" + cutedCurFileName;
-                    }
-                    */
                     string newFileName = curObjectInfo.Name.Replace(directoryToFindFrom, targetDirectory);
 
                     //проверяем, существует ли целевая директория
@@ -243,6 +210,7 @@ namespace FileTransfer
                         {
                             System.IO.File.Copy(curObjectInfo.Name, newFileName, true);
                             copiedFilesCount++;
+                            
                             //регистрация события
                             if (FileHasBeenCopied != null)
                             {
@@ -253,6 +221,7 @@ namespace FileTransfer
                         {
                             //MessageBox.Show(ex.Message);
                             badFilesForCopying.Add(curObjectInfo.Name);
+                            
                             //регистрация события
                             if (CopingErrorOccured != null)
                             {
@@ -294,6 +263,7 @@ namespace FileTransfer
                         }
                     }
                 }
+                
                 if (FilesHaveBeenDeleted != null)
                 {
                     FilesHaveBeenDeleted();
@@ -451,6 +421,7 @@ namespace FileTransfer
                 foundFilesCount++;
             }
         }
+        
         public void AddFoundFileToListBox(FilesSearcher.FoundObjectInfo fileInfo)
         {
             if (lbResults.InvokeRequired)
@@ -473,6 +444,7 @@ namespace FileTransfer
                 }
             }
         }
+        
         public void ShowNextCopiedFile(FilesSearcher.FoundObjectInfo fileInfo)
         {
             if (lcurFileName.InvokeRequired)
@@ -485,6 +457,7 @@ namespace FileTransfer
                 lcurFileName.Text = fileInfo.Name;
             }
         }
+        
         public void ShowNextDeletedFile(FilesSearcher.FoundObjectInfo fileInfo)
         {
             if (lcurFileName.InvokeRequired)
@@ -529,6 +502,7 @@ namespace FileTransfer
                 lPercents.Text = copiedFilesCount.ToString() + " из " + foundFilesCount.ToString() + "   ( " + percents + "% )";
             }
         }
+        
         public void DeletingPercents(FilesSearcher.FoundObjectInfo fileInfo)
         {
             if (lPercents.InvokeRequired)
@@ -543,6 +517,7 @@ namespace FileTransfer
                 lPercents.Text = copiedFilesCount.ToString() + " из " + foundFilesCount.ToString() + "   ( " + percents + "% )";
             }
         }
+        
         //кол-во найденных файлов
         public void FoundFilesAmount(FilesSearcher.FoundObjectInfo fileInfo)
         {
@@ -556,6 +531,7 @@ namespace FileTransfer
                 lPercents.Text = foundFilesCount.ToString();
             }
         }
+        
         //размер скопированных и удаленных данных
         public void CopiedFilesSize(FilesSearcher.FoundObjectInfo fileInfo)
         {
@@ -570,6 +546,7 @@ namespace FileTransfer
                 lFilesSize.Text = "( " + BackgroundFinder.FormattedSizeString(copDelFilesSize) + " of " + BackgroundFinder.FormattedSizeString(foundFilesSize) + " )";
             }
         }
+        
         public void DeletedFilesSize(FilesSearcher.FoundObjectInfo fileInfo)
         {
             if (lFilesSize.InvokeRequired)
@@ -599,6 +576,7 @@ namespace FileTransfer
                 MessageBox.Show("Поиск завершен");
             }
         }
+        
         public void FindingFinishedSizeCaption()
         {
             if (lFilesSize.InvokeRequired)
@@ -608,31 +586,6 @@ namespace FileTransfer
             }
             else
             {
-                /*
-                if ((float)foundFilesSize / 1024 / 1024 / 1024 > 1)
-                {
-                    lFilesSize.Text = (Math.Round(((float)foundFilesSize / 1024 / 1024 / 1024),1)).ToString() + " Gb";
-                }
-                else
-                {
-                    if ((float)foundFilesSize / 1024 / 1024 > 1)
-                    {
-                        lFilesSize.Text = (Math.Round(((float)foundFilesSize / 1024 / 1024),1)).ToString() + " Mb";
-                    }
-                    else
-                    {
-                        if ((float)foundFilesSize / 1024 > 1)
-                        {
-                            lFilesSize.Text = (Math.Round(((float)foundFilesSize / 1024),1)).ToString() + " Kb";
-                        }
-                        else
-                        {
-                            lFilesSize.Text = (Math.Round((foundFilesSize),1)).ToString() + " bytes";
-                        }
-                    }
-                }
-                lFilesSize.Text = "( " + lFilesSize.Text + " )";
-                */
                 lFilesSize.Text = "( " + BackgroundFinder.FormattedSizeString(foundFilesSize) + " )";
             }
         }
@@ -679,6 +632,7 @@ namespace FileTransfer
                 MessageBox.Show("Удаление завершено");
             }
         }
+        
         //отображение ошибок копирования и удаления
         public void ShowCopingErrorsAmount()
         {
@@ -692,6 +646,7 @@ namespace FileTransfer
                 lCopingErrorsAmount.Text = badFilesForCopying.Count.ToString();
             }
         }
+        
         public void ShowDeletingErrorsAmount()
         {
             if (lDeletingErrorsAmount.InvokeRequired)
@@ -877,52 +832,12 @@ namespace FileTransfer
         
         private void bSave_Click(object sender, EventArgs e)
         {
-            /*
-            try
-            {
-                FileStream fs = new FileStream("tfd", FileMode.Create);
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(fs, files);
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Массив найденных файлов сохранить не удалось" + "\n" + ex.Message);
-            }
-             */ 
+
         }
         
         private void bLoad_Click(object sender, EventArgs e)
         {
-            /*
-            try
-            {
-                FileStream fs = new FileStream("tfd", FileMode.Open);
-                BinaryFormatter bf = new BinaryFormatter();
-                files.Clear();
-                files = (List<FileInfo>)bf.Deserialize(fs);
-                fs.Close();
 
-                if (files.Count > 0)
-                {
-                    lvResults.Items.Clear();
-                    foreach (FileInfo curFI in files)
-                    {
-                        ListViewItem lvi = new ListViewItem();
-                        lvi.Text = curFI.absoluteFilePath + curFI.fileName;
-                        lvResults.Items.Add(lvi);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Массив найденных файлов пуст");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Не удалось загрузить массив найденных файлов" + "\n" + ex.Message);
-            }
-            */
         }
 
         private void bDelete_Click(object sender, EventArgs e)
@@ -1055,16 +970,7 @@ namespace FileTransfer
 
         private void tbFolder_TextChanged(object sender, EventArgs e)
         {
-            /*
-            if (tbFolder.Text.Length > 0)
-            {
-                bgFinder.targetDirectory = tbFolder.Text;
-            }
-            else
-            {
-                MessageBox.Show("Строка целевого каталога не может быть пустой");
-            }
-            */
+
         }
 
         private void chSearchWithText_CheckedChanged(object sender, EventArgs e)
@@ -1141,14 +1047,6 @@ namespace FileTransfer
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            /*
-            if (fileNameNumber == Directory.GetFiles("circle").Length)
-            {
-                fileNameNumber = 1;
-            }
-            pbCircle.Image = Bitmap.FromFile("circle\\circle" + fileNameNumber.ToString() + ".png");
-            fileNameNumber++;
-            */
             if (fileNameNumber == 37)
             {
                 fileNameNumber = 1;
@@ -1163,6 +1061,5 @@ namespace FileTransfer
         {
             lFilesSize.Location = new Point(lPercents.Location.X + lPercents.Width + 20, lFilesSize.Location.Y);
         }
-
     }
 }
